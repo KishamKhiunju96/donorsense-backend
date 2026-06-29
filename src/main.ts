@@ -38,7 +38,7 @@ async function bootstrap() {
   const reflector = app.get(Reflector);
   app.useGlobalInterceptors(
     new ClassSerializerInterceptor(reflector),
-    new ResponseTransformInterceptor(),
+    new ResponseTransformInterceptor(reflector),
   );
 
   // ── Global Filters ─────────────────────────────────

@@ -1,16 +1,28 @@
 export interface ApiResponse<T> {
-  success: boolean;
-  data: T;
-  message?: string;
+  success:   boolean;
+  message:   string;
+  data:      T;
+  timestamp: string;
 }
 
-export interface PaginatedMeta {
-  total: number;
-  page: number;
-  limit: number;
+export interface PaginatedApiResponse<T> extends ApiResponse<T[]> {
+  meta: PaginationMeta;
+}
+
+export interface PaginationMeta {
+  total:      number;
+  page:       number;
+  limit:      number;
   totalPages: number;
 }
 
-export interface PaginatedResponse<T> extends ApiResponse<T[]> {
-  meta: PaginatedMeta;
+export type PaginatedMeta = PaginationMeta;
+
+export interface PaginatedResponse<T> {
+  data:       T[];
+  total:      number;
+  page:       number;
+  limit:      number;
+  totalPages: number;
 }
+
