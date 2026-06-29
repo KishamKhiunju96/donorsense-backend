@@ -1,0 +1,197 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Organization {
+  id           String   @id @default(cuid())
+  name         String
+  ein          String?
+  email        String   @unique
+  passwordHash String
+  logo         String?
+  theme        Json?    // { primary: string, secondary: string, tertiary: string }
+  country      String?
+  state        String?
+  description  String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  donors    Donor[]
+  donations Donation[]
+  campaigns Campaign[]
+  receipts  Receipt[]
+  ocrScans  OcrScan[]
+
+  @@map("organizations")
+}
+
+model Donor {
+  id          String   @id @default(cuid())
+  orgId       String
+  firstName   String
+  lastName    String
+  email       String
+  phone       String?
+  address     String?
+  city        String?
+  state       String?
+  zip         String?
+  country     String?
+  tags        String[]
+  notes       String?
+  isAnonymous Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  donations    Donation[]
+  receipts     Receipt[]
+
+  @@unique([orgId, email])
+  @@index([orgId])
+  @@map("donors")
+}
+
+model Donation {
+  id               String         @id @default(cuid())
+  orgId            String
+  donorId          String?
+  campaignId       String?
+  amount           Float
+  currency         String         @default("USD")
+  status           DonationStatus @default(RECEIVED)
+  type             DonationType
+  method           PaymentMethod
+  frequency        Frequency?
+  nextExpectedDate DateTime?
+  checkNumber      String?
+  transactionId    String?        @unique
+  receiptNumber    String?
+  notes            String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  donor        Donor?       @relation(fields: [donorId], references: [id], onDelete: SetNull)
+  campaign     Campaign?    @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  receipt      Receipt?
+
+  @@index([orgId])
+  @@index([donorId])
+  @@index([campaignId])
+  @@index([createdAt])
+  @@map("donations")
+}
+
+model Campaign {
+  id          String         @id @default(cuid())
+  orgId       String
+  name        String
+  description String?
+  goal        Float
+  startDate   DateTime?
+  endDate     DateTime?
+  status      CampaignStatus @default(DRAFT)
+  location    String?
+  imageUrl    String?
+  formId      String?        @unique @default(cuid())
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  donations    Donation[]
+
+  @@index([orgId])
+  @@map("campaigns")
+}
+
+model Receipt {
+  id            String    @id @default(cuid())
+  orgId         String
+  donorId       String
+  donationId    String    @unique
+  receiptNumber String
+  sentAt        DateTime?
+  sentTo        String?
+  sentVia       String?   // "email" | "download"
+  pdfUrl        String?
+  createdAt     DateTime  @default(now())
+
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  donor        Donor        @relation(fields: [donorId], references: [id])
+  donation     Donation     @relation(fields: [donationId], references: [id])
+
+  @@index([orgId])
+  @@index([donorId])
+  @@map("receipts")
+}
+
+model OcrScan {
+  id             String    @id @default(cuid())
+  orgId          String
+  filename       String
+  imageUrl       String?
+  status         OcrStatus @default(PENDING)
+  extractedData  Json?
+  donationId     String?
+  rejectedReason String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([orgId])
+  @@map("ocr_scans")
+}
+
+enum DonationStatus {
+  RECEIVED
+  PENDING
+  CLEARED
+  REFUNDED
+}
+
+enum DonationType {
+  ONE_TIME
+  RECURRING
+  PLEDGE
+  MATCHING
+}
+
+enum PaymentMethod {
+  CREDIT_CARD
+  ACH_BANK_TRANSFER
+  CHECK
+  CASH
+  PAYPAL
+  CRYPTO
+  OFFLINE
+}
+
+enum Frequency {
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+  ANNUALLY
+}
+
+enum CampaignStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+  DRAFT
+}
+
+enum OcrStatus {
+  PENDING
+  PROCESSING
+  REVIEW_NEEDED
+  ACCEPTED
+  REJECTED
+}

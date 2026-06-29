@@ -1,34 +1,40 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { APP_GUARD } from '@nestjs/core';
-import { appConfig }      from './config/app.config';
-import { databaseConfig } from './config/database.config';
-import { jwtConfig }      from './config/jwt.config';
-import { DatabaseModule } from './database/database.module';
-import { AuthModule }     from './modules/auth/auth.module';
-import { UsersModule }    from './modules/users/users.module';
-import { AppController }  from './app.controller';
-import { JwtAuthGuard }   from './common/guards/jwt-auth.guard';
-import { RolesGuard }     from './common/guards/roles.guard';
-// Import additional feature modules below this line
+import { AppController }        from './app.controller';
+import { AppService }           from './app.service';
+import { PrismaModule }         from './prisma/prisma.module';
+import { AuthModule }           from './auth/auth.module';
+import { OrganizationsModule }  from './organizations/organizations.module';
+import { DonorsModule }         from './donors/donors.module';
+import { DonationsModule }      from './donations/donations.module';
+import { CampaignsModule }      from './campaigns/campaigns.module';
+import { ReceiptsModule }       from './receipts/receipts.module';
+import { OcrModule }            from './ocr/ocr.module';
+import { DashboardModule }      from './dashboard/dashboard.module';
+import { ExportModule }         from './export/export.module';
+import { EmailModule }          from './email/email.module';
+import { StripeModule }         from './stripe/stripe.module';
 
 @Module({
   imports: [
-    // Config — always first; isGlobal makes ConfigService available everywhere
-    ConfigModule.forRoot({
-      isGlobal: true,
-      load: [appConfig, databaseConfig, jwtConfig],
-    }),
-    // Database
-    DatabaseModule,
+    // Config — isGlobal makes ConfigService available everywhere
+    ConfigModule.forRoot({ isGlobal: true }),
+    // Prisma — global DB client
+    PrismaModule,
     // Feature modules
     AuthModule,
-    UsersModule,
+    OrganizationsModule,
+    DonorsModule,
+    DonationsModule,
+    CampaignsModule,
+    ReceiptsModule,
+    OcrModule,
+    DashboardModule,
+    ExportModule,
+    EmailModule,
+    StripeModule,
   ],
   controllers: [AppController],
-  providers: [
-    { provide: APP_GUARD, useClass: JwtAuthGuard },
-    { provide: APP_GUARD, useClass: RolesGuard },
-  ],
+  providers: [AppService],
 })
 export class AppModule {}

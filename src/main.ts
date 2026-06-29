@@ -1,24 +1,21 @@
-import { NestFactory, Reflector } from '@nestjs/core';
-import { ValidationPipe, ClassSerializerInterceptor, Logger } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
+import { ValidationPipe, Logger } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import { ResponseTransformInterceptor } from './common/interceptors/response-transform.interceptor';
-import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
-import { appConfig } from './config/app.config';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    logger: ['error', 'warn', 'log', 'debug'],
+    logger: ['error', 'warn', 'log'],
   });
 
-  const config = app.get(appConfig.KEY);
-
   // ── Global prefix ──────────────────────────────────
-  app.setGlobalPrefix('api/v1');
+  app.setGlobalPrefix('api');
 
-  // ── CORS ───────────────────────────────────────────
+  // ── CORS — allow Next.js / Vite frontend ───────────
   app.enableCors({
-    origin: config.allowedOrigins,
+    origin: (process.env.ALLOWED_ORIGINS ?? 'http://localhost:5173,http://localhost:3000').split(','),
     credentials: true,
   });
 
@@ -28,53 +25,47 @@ async function bootstrap() {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
-      transformOptions: {
-        enableImplicitConversion: true,
-      },
+      transformOptions: { enableImplicitConversion: true },
     }),
   );
 
-  // ── Global Interceptors ────────────────────────────
-  const reflector = app.get(Reflector);
-  app.useGlobalInterceptors(
-    new ClassSerializerInterceptor(reflector),
-    new ResponseTransformInterceptor(reflector),
-  );
+  // ── Global Exception Filter ────────────────────────
+  app.useGlobalFilters(new HttpExceptionFilter());
 
-  // ── Global Filters ─────────────────────────────────
-  app.useGlobalFilters(new GlobalExceptionFilter());
+  // ── Global Response Transform ──────────────────────
+  app.useGlobalInterceptors(new TransformInterceptor());
 
   // ── Swagger ────────────────────────────────────────
-  if (config.nodeEnv !== 'production') {
-    const swaggerConfig = new DocumentBuilder()
-      .setTitle(config.appName)
-      .setDescription(`${config.appName} REST API`)
-      .setVersion('1.0')
-      .addBearerAuth(
-        { type: 'http', scheme: 'bearer', bearerFormat: 'JWT', in: 'header' },
-        'JWT',
-      )
-      .addTag('Health', 'Health check')
-      .addTag('Auth',     'Authentication: login, register, token refresh')
-      .addTag('Users',    'User account management')
-      // Add a tag for each new module here
-      .build();
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle('DonorSense API')
+    .setDescription('DonorSense.AI Backend REST API — Phase 1')
+    .setVersion('1.0')
+    .addBearerAuth(
+      { type: 'http', scheme: 'bearer', bearerFormat: 'JWT', in: 'header' },
+      'JWT',
+    )
+    .addTag('auth',          'Authentication: register, login, profile')
+    .addTag('organizations', 'Organization profile management')
+    .addTag('donors',        'Donor records & statistics')
+    .addTag('donations',     'Donation records, filters & analytics')
+    .addTag('campaigns',     'Fundraising campaign management')
+    .addTag('receipts',      'Receipt generation & delivery')
+    .addTag('ocr',           'Check scanning via AWS Textract')
+    .addTag('dashboard',     'High-level analytics dashboard')
+    .addTag('export',        'CSV export endpoints')
+    .build();
 
-    const document = SwaggerModule.createDocument(app, swaggerConfig);
-    SwaggerModule.setup('api/docs', app, document, {
-      swaggerOptions: { persistAuthorization: true },
-    });
-
-    new Logger('Swagger').log(
-      `Docs available at: http://localhost:${config.port}/api/docs`,
-    );
-  }
+  const document = SwaggerModule.createDocument(app, swaggerConfig);
+  SwaggerModule.setup('api/docs', app, document, {
+    swaggerOptions: { persistAuthorization: true },
+  });
 
   // ── Start ──────────────────────────────────────────
-  await app.listen(config.port);
-  new Logger('Bootstrap').log(
-    `App running on port ${config.port} [${config.nodeEnv}]`,
-  );
+  const port = parseInt(process.env.PORT ?? '3001', 10);
+  await app.listen(port);
+
+  new Logger('Bootstrap').log(`DonorSense API running on http://localhost:${port}`);
+  new Logger('Bootstrap').log(`Swagger docs at http://localhost:${port}/api/docs`);
 }
 
 bootstrap();
