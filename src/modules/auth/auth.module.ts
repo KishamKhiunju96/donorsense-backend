@@ -1,9 +1,27 @@
-import { Module } from '@nestjs/common';
+import { Module }      from '@nestjs/common';
+import { JwtModule }   from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { UsersModule }    from '../users/users.module';
+import { AuthService }    from './auth.service';
+import { AuthController } from './auth.controller';
+import { JwtStrategy }    from './strategies/jwt.strategy';
 
-/**
- * AuthModule — stub placeholder.
- * Full implementation in SKILL-auth-guards.md.
- * Will provide JwtStrategy, AuthController, AuthService, etc.
- */
-@Module({})
+@Module({
+  imports: [
+    PassportModule.register({ defaultStrategy: 'jwt' }),
+    JwtModule.registerAsync({
+      imports:    [ConfigModule],
+      inject:     [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        secret:      config.get<string>('jwt.secret'),
+        signOptions: { expiresIn: config.get<string>('jwt.accessExpiresIn') as unknown as number },
+      }),
+    }),
+    UsersModule,
+  ],
+  controllers: [AuthController],
+  providers:   [AuthService, JwtStrategy],
+  exports:     [AuthService],
+})
 export class AuthModule {}
