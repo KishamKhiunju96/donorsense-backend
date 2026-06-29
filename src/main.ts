@@ -55,8 +55,8 @@ async function bootstrap() {
         'JWT',
       )
       .addTag('Health', 'Health check')
-      .addTag('Auth', 'Authentication and authorization')
-      .addTag('Users', 'User management')
+      .addTag('Auth',     'Authentication: login, register, token refresh')
+      .addTag('Users',    'User account management')
       // Add a tag for each new module here
       .build();
 
