@@ -10,12 +10,12 @@ import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
 import { SKIP_RESPONSE_TRANSFORM_KEY } from '../decorators/skip-transform.decorator';
 import { RESPONSE_MESSAGE_KEY } from '../decorators/response-message.decorator';
-import { ApiResponse } from '../types/api-response.type';
 
 @Injectable()
-export class ResponseTransformInterceptor<T>
-  implements NestInterceptor<T, ApiResponse<T> | any>
-{
+export class ResponseTransformInterceptor<T> implements NestInterceptor<
+  T,
+  any
+> {
   constructor(private readonly reflector: Reflector) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
@@ -61,9 +61,7 @@ export class ResponseTransformInterceptor<T>
   }
 }
 
-function isPaginatedResponse(
-  data: unknown,
-): data is {
+function isPaginatedResponse(data: unknown): data is {
   data: unknown[];
   total: number;
   page: number;

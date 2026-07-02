@@ -17,13 +17,16 @@ export class DashboardService {
         where: { orgId },
         select: { amount: true, createdAt: true, donorId: true, status: true },
       }),
-      this.prisma.donor.findMany({ where: { orgId }, select: { id: true, createdAt: true } }),
+      this.prisma.donor.findMany({
+        where: { orgId },
+        select: { id: true, createdAt: true },
+      }),
       this.prisma.campaign.findMany({ where: { orgId, status: 'ACTIVE' } }),
     ]);
 
-    const mtd = allDonations.filter(d => new Date(d.createdAt) >= mtdStart);
-    const ytd = allDonations.filter(d => new Date(d.createdAt) >= ytdStart);
-    const lastMonth = allDonations.filter(d => {
+    const mtd = allDonations.filter((d) => new Date(d.createdAt) >= mtdStart);
+    const ytd = allDonations.filter((d) => new Date(d.createdAt) >= ytdStart);
+    const lastMonth = allDonations.filter((d) => {
       const dt = new Date(d.createdAt);
       return dt >= lastMonthStart && dt <= lastMonthEnd;
     });
@@ -33,13 +36,12 @@ export class DashboardService {
     const totalRaisedYTD = ytd.reduce((s, d) => s + d.amount, 0);
     const totalRaisedLastMonth = lastMonth.reduce((s, d) => s + d.amount, 0);
 
-    const averageDonation = allDonations.length > 0
-      ? totalRaisedAllTime / allDonations.length
-      : 0;
+    const averageDonation =
+      allDonations.length > 0 ? totalRaisedAllTime / allDonations.length : 0;
 
     // Build 12-month trend
     const givingTrend12m = this.buildMonthlyTrend(allDonations, 12);
-    const monthlyData = givingTrend12m.map(m => ({
+    const monthlyData = givingTrend12m.map((m) => ({
       month: m.month,
       donations: m.amount,
       donors: 0, // TODO: compute unique donors per month if needed
@@ -52,11 +54,11 @@ export class DashboardService {
       totalDonors: donors.length,
       activeCampaigns: campaigns.length,
       averageDonation,
-      conversionRate: 0,    // Requires form view data — Phase 2
-      retentionRate: 0,     // Requires historical cohort analysis — Phase 2
+      conversionRate: 0, // Requires form view data — Phase 2
+      retentionRate: 0, // Requires historical cohort analysis — Phase 2
       trends: {
         totalRaised: totalRaisedMTD >= totalRaisedLastMonth ? 'up' : 'down',
-        totalDonors: 'up',  // Simplified — expand with prior-month donor count
+        totalDonors: 'up', // Simplified — expand with prior-month donor count
         averageDonation: 'up',
       },
       monthlyData,
@@ -71,9 +73,12 @@ export class DashboardService {
     for (let i = months - 1; i >= 0; i--) {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const next = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
-      const month = d.toLocaleString('default', { month: 'short', year: '2-digit' });
+      const month = d.toLocaleString('default', {
+        month: 'short',
+        year: '2-digit',
+      });
       const amount = donations
-        .filter(don => {
+        .filter((don) => {
           const dt = new Date(don.createdAt);
           return dt >= d && dt < next;
         })

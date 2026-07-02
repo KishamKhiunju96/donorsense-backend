@@ -15,7 +15,10 @@ export function buildPaginatedMeta(opts: PaginateOptions): PaginatedMeta {
   };
 }
 
-export function buildSkipTake(page: number, limit: number): { skip: number; take: number } {
+export function buildSkipTake(
+  page: number,
+  limit: number,
+): { skip: number; take: number } {
   const safePage = Math.max(1, page);
   const safeLimit = Math.min(100, Math.max(1, limit));
   return {

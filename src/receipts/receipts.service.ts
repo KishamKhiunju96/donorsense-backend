@@ -102,7 +102,11 @@ export class ReceiptsService {
         const result = await this.sendReceipt(orgId, donation.id);
         results.push({ donationId: donation.id, ...result });
       } catch (e: any) {
-        results.push({ donationId: donation.id, success: false, error: e.message });
+        results.push({
+          donationId: donation.id,
+          success: false,
+          error: e.message,
+        });
       }
     }
     return { total: pending.length, results };

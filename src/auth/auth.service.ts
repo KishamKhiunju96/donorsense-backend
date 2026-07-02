@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  ConflictException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcryptjs';
@@ -13,7 +17,9 @@ export class AuthService {
   ) {}
 
   async register(dto: RegisterDto) {
-    const exists = await this.prisma.organization.findUnique({ where: { email: dto.email } });
+    const exists = await this.prisma.organization.findUnique({
+      where: { email: dto.email },
+    });
     if (exists) throw new ConflictException('Email already registered');
 
     const passwordHash = await bcrypt.hash(dto.password, 10);
@@ -33,7 +39,9 @@ export class AuthService {
   }
 
   async login(dto: LoginDto) {
-    const org = await this.prisma.organization.findUnique({ where: { email: dto.email } });
+    const org = await this.prisma.organization.findUnique({
+      where: { email: dto.email },
+    });
     if (!org) throw new UnauthorizedException('Invalid credentials');
 
     const valid = await bcrypt.compare(dto.password, org.passwordHash);
@@ -44,12 +52,14 @@ export class AuthService {
   }
 
   async getMe(orgId: string) {
-    const org = await this.prisma.organization.findUniqueOrThrow({ where: { id: orgId } });
+    const org = await this.prisma.organization.findUniqueOrThrow({
+      where: { id: orgId },
+    });
     return this.sanitizeOrg(org);
   }
 
   private sanitizeOrg(org: any) {
-    const { passwordHash, ...rest } = org;
+    const { passwordHash: _, ...rest } = org;
     return rest;
   }
 }

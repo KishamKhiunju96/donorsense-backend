@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateDonorDto } from './dto/create-donor.dto';
 import { UpdateDonorDto } from './dto/update-donor.dto';
@@ -31,7 +35,7 @@ export class DonorsService {
       },
     });
 
-    return donors.map(d => this.computeDonorStats(d));
+    return donors.map((d) => this.computeDonorStats(d));
   }
 
   async search(orgId: string, q: string) {
@@ -45,9 +49,10 @@ export class DonorsService {
 
     return {
       totalDonors: donors.length,
-      activeMonthly: donors.filter(d => d.tags.includes('Monthly')).length,
-      majorDonors: donors.filter(d => d.tags.includes('Major Donor')).length,
-      newThisMonth: donors.filter(d => new Date(d.createdAt) >= mtdStart).length,
+      activeMonthly: donors.filter((d) => d.tags.includes('Monthly')).length,
+      majorDonors: donors.filter((d) => d.tags.includes('Major Donor')).length,
+      newThisMonth: donors.filter((d) => new Date(d.createdAt) >= mtdStart)
+        .length,
     };
   }
 
@@ -67,7 +72,8 @@ export class DonorsService {
     const exists = await this.prisma.donor.findFirst({
       where: { orgId, email: dto.email },
     });
-    if (exists) throw new ConflictException('A donor with this email already exists');
+    if (exists)
+      throw new ConflictException('A donor with this email already exists');
 
     return this.prisma.donor.create({
       data: { ...dto, orgId, tags: dto.tags ?? [] },
@@ -107,7 +113,10 @@ export class DonorsService {
 
   private computeDonorStats(donor: any) {
     const donations = donor.donations ?? [];
-    const totalDonated = donations.reduce((s: number, d: any) => s + d.amount, 0);
+    const totalDonated = donations.reduce(
+      (s: number, d: any) => s + d.amount,
+      0,
+    );
     const donationCount = donations.length;
     const lastDonation = donations[0];
 

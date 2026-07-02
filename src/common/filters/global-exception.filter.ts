@@ -1,41 +1,45 @@
 import {
-  ExceptionFilter, Catch, ArgumentsHost,
-  HttpException, HttpStatus, Logger,
+  ExceptionFilter,
+  Catch,
+  ArgumentsHost,
+  HttpException,
+  HttpStatus,
+  Logger,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 
 interface ErrorResponse {
-  success:    false;
+  success: false;
   statusCode: number;
-  error:      string;
-  message:    string;
-  details?:   ValidationDetail[];
-  timestamp:  string;
-  path:       string;
+  error: string;
+  message: string;
+  details?: ValidationDetail[];
+  timestamp: string;
+  path: string;
 }
 
 interface ValidationDetail {
-  field:   string;
+  field: string;
   message: string;
 }
 
-@Catch()   // catches ALL exceptions — both HttpException and unexpected errors
+@Catch() // catches ALL exceptions — both HttpException and unexpected errors
 export class GlobalExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(GlobalExceptionFilter.name);
 
   catch(exception: unknown, host: ArgumentsHost): void {
-    const ctx      = host.switchToHttp();
+    const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
-    const request  = ctx.getRequest<Request>();
+    const request = ctx.getRequest<Request>();
 
     let statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
-    let error      = 'INTERNAL_SERVER_ERROR';
-    let message    = 'An unexpected error occurred';
+    let error = 'INTERNAL_SERVER_ERROR';
+    let message = 'An unexpected error occurred';
     let details: ValidationDetail[] | undefined;
 
     if (exception instanceof HttpException) {
       statusCode = exception.getStatus();
-      error      = this.getErrorCode(statusCode);
+      error = this.getErrorCode(statusCode);
       const body = exception.getResponse();
 
       if (typeof body === 'string') {
@@ -48,12 +52,15 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         if (Array.isArray(bodyObj['message'])) {
           message = 'Validation failed';
           details = this.formatValidationErrors(bodyObj['message'] as string[]);
-          error   = 'VALIDATION_ERROR';
+          error = 'VALIDATION_ERROR';
         }
       }
     } else {
       // Unexpected error — log full stack, return generic message to client
-      this.logger.error('Unhandled exception', exception instanceof Error ? exception.stack : String(exception));
+      this.logger.error(
+        'Unhandled exception',
+        exception instanceof Error ? exception.stack : String(exception),
+      );
     }
 
     const errorResponse: ErrorResponse = {
@@ -63,7 +70,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       message,
       ...(details ? { details } : {}),
       timestamp: new Date().toISOString(),
-      path:      request.url,
+      path: request.url,
     };
 
     response.status(statusCode).json(errorResponse);
@@ -87,7 +94,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
   private formatValidationErrors(messages: string[]): ValidationDetail[] {
     // class-validator messages are in format: "fieldName must be..."
-    return messages.map(msg => {
+    return messages.map((msg) => {
       const parts = msg.split(' ');
       return { field: parts[0] ?? 'unknown', message: msg };
     });

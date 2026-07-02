@@ -9,10 +9,23 @@ export class ExportService {
   async exportDonors(orgId: string, res: Response) {
     const donors = await this.prisma.donor.findMany({ where: { orgId } });
 
-    const headers = ['First Name','Last Name','Email','Phone','City','State','Tags','Created Date'];
-    const rows = donors.map(d => [
-      d.firstName, d.lastName, d.email,
-      d.phone ?? '', d.city ?? '', d.state ?? '',
+    const headers = [
+      'First Name',
+      'Last Name',
+      'Email',
+      'Phone',
+      'City',
+      'State',
+      'Tags',
+      'Created Date',
+    ];
+    const rows = donors.map((d) => [
+      d.firstName,
+      d.lastName,
+      d.email,
+      d.phone ?? '',
+      d.city ?? '',
+      d.state ?? '',
       d.tags.join('; '),
       d.createdAt.toISOString().split('T')[0],
     ]);
@@ -39,13 +52,15 @@ export class ExportService {
     if (filters.dateRange && filters.dateRange !== 'all') {
       const now = new Date();
       const cutoffs = {
-        '7d':  new Date(now.getTime() - 7 * 86400000),
+        '7d': new Date(now.getTime() - 7 * 86400000),
         '30d': new Date(now.getTime() - 30 * 86400000),
         '90d': new Date(now.getTime() - 90 * 86400000),
-        'mtd': new Date(now.getFullYear(), now.getMonth(), 1),
-        'ytd': new Date(now.getFullYear(), 0, 1),
+        mtd: new Date(now.getFullYear(), now.getMonth(), 1),
+        ytd: new Date(now.getFullYear(), 0, 1),
       };
-      where.createdAt = { gte: cutoffs[filters.dateRange as keyof typeof cutoffs] };
+      where.createdAt = {
+        gte: cutoffs[filters.dateRange as keyof typeof cutoffs],
+      };
     }
 
     const donations = await this.prisma.donation.findMany({
@@ -57,8 +72,19 @@ export class ExportService {
       orderBy: { createdAt: 'desc' },
     });
 
-    const headers = ['Date','Donor','Email','Campaign','Amount','Status','Type','Method','Transaction ID','Receipt #'];
-    const rows = donations.map(d => [
+    const headers = [
+      'Date',
+      'Donor',
+      'Email',
+      'Campaign',
+      'Amount',
+      'Status',
+      'Type',
+      'Method',
+      'Transaction ID',
+      'Receipt #',
+    ];
+    const rows = donations.map((d) => [
       d.createdAt.toISOString().split('T')[0],
       d.donor ? `${d.donor.firstName} ${d.donor.lastName}` : 'Anonymous',
       d.donor?.email ?? '',
@@ -88,8 +114,8 @@ export class ExportService {
       this.prisma.campaign.count({ where: { orgId, status: 'ACTIVE' } }),
     ]);
 
-    const mtd = allDonations.filter(d => new Date(d.createdAt) >= mtdStart);
-    const ytd = allDonations.filter(d => new Date(d.createdAt) >= ytdStart);
+    const mtd = allDonations.filter((d) => new Date(d.createdAt) >= mtdStart);
+    const ytd = allDonations.filter((d) => new Date(d.createdAt) >= ytdStart);
 
     const totalRaisedAllTime = allDonations.reduce((s, d) => s + d.amount, 0);
     const totalRaisedMTD = mtd.reduce((s, d) => s + d.amount, 0);
@@ -107,14 +133,22 @@ export class ExportService {
     this.sendCsv(res, 'dashboard-summary', headers, rows);
   }
 
-  private sendCsv(res: Response, name: string, headers: string[], rows: any[][]) {
+  private sendCsv(
+    res: Response,
+    name: string,
+    headers: string[],
+    rows: any[][],
+  ) {
     const csv = [headers, ...rows]
-      .map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(','))
+      .map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(','))
       .join('\n');
 
     const date = new Date().toISOString().split('T')[0];
     res.setHeader('Content-Type', 'text/csv');
-    res.setHeader('Content-Disposition', `attachment; filename="${name}-${date}.csv"`);
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="${name}-${date}.csv"`,
+    );
     res.send(csv);
   }
 }

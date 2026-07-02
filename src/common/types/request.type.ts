@@ -6,15 +6,15 @@ export interface AuthenticatedRequest extends Request {
 }
 
 export interface AuthenticatedUser {
-  id:    string;
+  id: string;
   email: string;
-  role:  string;
+  role: string;
 }
 
 export interface JwtPayload {
-  sub:   string;   // user ID
+  sub: string; // user ID
   email: string;
-  role:  string;
-  iat:   number;
-  exp:   number;
+  role: string;
+  iat: number;
+  exp: number;
 }

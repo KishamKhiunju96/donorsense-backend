@@ -1,22 +1,31 @@
 import { IsString, IsNumber, IsOptional, IsEnum, Min } from 'class-validator';
-import { DonationStatus, DonationType, PaymentMethod, Frequency } from '@prisma/client';
+import {
+  DonationStatus,
+  DonationType,
+  PaymentMethod,
+  Frequency,
+} from '@prisma/client';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateDonationDto {
   @ApiPropertyOptional({ description: 'ID of the associated donor' })
-  @IsOptional() @IsString()
+  @IsOptional()
+  @IsString()
   donorId?: string;
 
   @ApiPropertyOptional({ description: 'ID of the associated campaign' })
-  @IsOptional() @IsString()
+  @IsOptional()
+  @IsString()
   campaignId?: string;
 
   @ApiProperty({ description: 'Amount donated', minimum: 0.01 })
-  @IsNumber() @Min(0.01)
+  @IsNumber()
+  @Min(0.01)
   amount!: number;
 
   @ApiPropertyOptional({ description: 'Currency code', default: 'USD' })
-  @IsOptional() @IsString()
+  @IsOptional()
+  @IsString()
   currency?: string;
 
   @ApiProperty({ enum: DonationStatus, description: 'Donation status' })
@@ -31,19 +40,26 @@ export class CreateDonationDto {
   @IsEnum(PaymentMethod)
   method!: PaymentMethod;
 
-  @ApiPropertyOptional({ enum: Frequency, description: 'Frequency of recurring donation' })
-  @IsOptional() @IsEnum(Frequency)
+  @ApiPropertyOptional({
+    enum: Frequency,
+    description: 'Frequency of recurring donation',
+  })
+  @IsOptional()
+  @IsEnum(Frequency)
   frequency?: Frequency;
 
   @ApiPropertyOptional({ description: 'Check number if method is CHECK' })
-  @IsOptional() @IsString()
+  @IsOptional()
+  @IsString()
   checkNumber?: string;
 
   @ApiPropertyOptional({ description: 'Unique transaction ID' })
-  @IsOptional() @IsString()
+  @IsOptional()
+  @IsString()
   transactionId?: string;
 
   @ApiPropertyOptional({ description: 'Internal admin notes' })
-  @IsOptional() @IsString()
+  @IsOptional()
+  @IsString()
   notes?: string;
 }

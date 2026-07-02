@@ -16,7 +16,7 @@ export class CampaignsService {
       orderBy: { createdAt: 'desc' },
     });
 
-    return campaigns.map(c => this.enrichCampaign(c));
+    return campaigns.map((c) => this.enrichCampaign(c));
   }
 
   async findOne(orgId: string, id: string) {
@@ -62,7 +62,9 @@ export class CampaignsService {
   private enrichCampaign(campaign: any) {
     const donations = campaign.donations ?? [];
     const raised = donations.reduce((s: number, d: any) => s + d.amount, 0);
-    const donorIds = new Set(donations.map((d: any) => d.donorId).filter(Boolean));
+    const donorIds = new Set(
+      donations.map((d: any) => d.donorId).filter(Boolean),
+    );
     return {
       ...campaign,
       donations: undefined,

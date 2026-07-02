@@ -22,7 +22,10 @@ export class ReceiptsController {
   }
 
   @Get('by-donation/:donationId')
-  findByDonation(@OrgId() orgId: string, @Param('donationId') donationId: string) {
+  findByDonation(
+    @OrgId() orgId: string,
+    @Param('donationId') donationId: string,
+  ) {
     return this.receiptsService.findByDonation(orgId, donationId);
   }
 

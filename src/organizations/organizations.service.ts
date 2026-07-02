@@ -11,7 +11,7 @@ export class OrganizationsService {
       where: { id: orgId },
     });
     if (!org) throw new NotFoundException('Organization not found');
-    const { passwordHash, ...rest } = org;
+    const { passwordHash: _, ...rest } = org;
     return rest;
   }
 
@@ -21,7 +21,7 @@ export class OrganizationsService {
       where: { id: orgId },
       data: dto,
     });
-    const { passwordHash, ...rest } = updated;
+    const { passwordHash: _, ...rest } = updated;
     return rest;
   }
 }

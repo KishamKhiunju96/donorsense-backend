@@ -2,9 +2,9 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from '@nestjs/common';
 
 export class PaginationMetaDto {
-  @ApiProperty() total!:      number;
-  @ApiProperty() page!:       number;
-  @ApiProperty() limit!:      number;
+  @ApiProperty() total!: number;
+  @ApiProperty() page!: number;
+  @ApiProperty() limit!: number;
   @ApiProperty() totalPages!: number;
 }
 
@@ -13,12 +13,14 @@ export class PaginationMetaDto {
  */
 export function WrappedApiResponseDto<T>(DataDto: Type<T>) {
   class WrappedResponse {
-    @ApiProperty() success!:   boolean;
-    @ApiProperty() message!:   string;
+    @ApiProperty() success!: boolean;
+    @ApiProperty() message!: string;
     @ApiProperty({ type: () => DataDto }) data!: T;
     @ApiProperty() timestamp!: string;
   }
-  Object.defineProperty(WrappedResponse, 'name', { value: `WrappedResponse<${DataDto.name}>` });
+  Object.defineProperty(WrappedResponse, 'name', {
+    value: `WrappedResponse<${DataDto.name}>`,
+  });
   return WrappedResponse;
 }
 
@@ -27,12 +29,14 @@ export function WrappedApiResponseDto<T>(DataDto: Type<T>) {
  */
 export function PaginatedApiResponseDto<T>(DataDto: Type<T>) {
   class PaginatedResponse {
-    @ApiProperty() success!:   boolean;
-    @ApiProperty() message!:   string;
+    @ApiProperty() success!: boolean;
+    @ApiProperty() message!: string;
     @ApiProperty({ type: () => [DataDto] }) data!: T[];
     @ApiProperty({ type: () => PaginationMetaDto }) meta!: PaginationMetaDto;
     @ApiProperty() timestamp!: string;
   }
-  Object.defineProperty(PaginatedResponse, 'name', { value: `PaginatedResponse<${DataDto.name}>` });
+  Object.defineProperty(PaginatedResponse, 'name', {
+    value: `PaginatedResponse<${DataDto.name}>`,
+  });
   return PaginatedResponse;
 }

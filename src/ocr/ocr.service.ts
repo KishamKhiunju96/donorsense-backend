@@ -60,7 +60,9 @@ export class OcrService {
   }
 
   async acceptScan(orgId: string, scanId: string, donationData: any) {
-    const scan = await this.prisma.ocrScan.findFirst({ where: { id: scanId, orgId } });
+    const scan = await this.prisma.ocrScan.findFirst({
+      where: { id: scanId, orgId },
+    });
     if (!scan) throw new NotFoundException('Scan not found');
 
     // Create donation from accepted scan
@@ -87,7 +89,9 @@ export class OcrService {
   }
 
   async rejectScan(orgId: string, scanId: string, dto: RejectScanDto) {
-    const scan = await this.prisma.ocrScan.findFirst({ where: { id: scanId, orgId } });
+    const scan = await this.prisma.ocrScan.findFirst({
+      where: { id: scanId, orgId },
+    });
     if (!scan) throw new NotFoundException('Scan not found');
 
     return this.prisma.ocrScan.update({
@@ -100,7 +104,9 @@ export class OcrService {
   }
 
   async remove(orgId: string, scanId: string) {
-    const scan = await this.prisma.ocrScan.findFirst({ where: { id: scanId, orgId } });
+    const scan = await this.prisma.ocrScan.findFirst({
+      where: { id: scanId, orgId },
+    });
     if (!scan) throw new NotFoundException('Scan not found');
     await this.prisma.ocrScan.delete({ where: { id: scanId } });
     return { deleted: true };

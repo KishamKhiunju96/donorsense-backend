@@ -1,4 +1,8 @@
-import { ConflictException, InternalServerErrorException, Logger } from '@nestjs/common';
+import {
+  ConflictException,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 
 const logger = new Logger('DatabaseError');
 
@@ -13,10 +17,15 @@ export const handleDbError = (error: unknown): never => {
       throw new ConflictException('Referenced record does not exist');
     }
   }
-  logger.error('Unhandled DB error', error instanceof Error ? error.stack : String(error));
+  logger.error(
+    'Unhandled DB error',
+    error instanceof Error ? error.stack : String(error),
+  );
   throw new InternalServerErrorException('Database operation failed');
 };
 
-function isQueryFailedError(error: unknown): error is { code: string; detail: string } {
+function isQueryFailedError(
+  error: unknown,
+): error is { code: string; detail: string } {
   return typeof error === 'object' && error !== null && 'code' in error;
 }

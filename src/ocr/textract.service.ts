@@ -8,8 +8,9 @@ export class TextractService {
     date?: string;
     checkNumber?: string;
   }> {
-    // TODO Phase 2: Call AWS Textract
-    console.log('[TEXTRACT STUB] Would analyze check image');
+    console.log(
+      `[TEXTRACT STUB] Would analyze check image (${imageBuffer.length} bytes)`,
+    );
     return {};
   }
 }

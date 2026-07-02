@@ -4,6 +4,14 @@ import * as bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
+  // Clean database before seeding
+  await prisma.receipt.deleteMany({});
+  await prisma.ocrScan.deleteMany({});
+  await prisma.donation.deleteMany({});
+  await prisma.donor.deleteMany({});
+  await prisma.campaign.deleteMany({});
+  await prisma.organization.deleteMany({});
+
   // Organization
   const org = await prisma.organization.create({
     data: {
