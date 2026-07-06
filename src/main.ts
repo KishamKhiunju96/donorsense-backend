@@ -45,7 +45,7 @@ async function bootstrap() {
     .setVersion('1.0')
     .addBearerAuth(
       { type: 'http', scheme: 'bearer', bearerFormat: 'JWT', in: 'header' },
-      'JWT',
+      'bearer',
     )
     .addTag('auth', 'Authentication: register, login, profile')
     .addTag('organizations', 'Organization profile management')
