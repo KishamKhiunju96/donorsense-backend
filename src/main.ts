@@ -64,7 +64,7 @@ async function bootstrap() {
   });
 
   // ── Start ──────────────────────────────────────────
-  const port = parseInt(process.env.PORT ?? '3001', 10);
+  const port = parseInt(process.env.PORT ?? '5000', 10);
   await app.listen(port);
 
   new Logger('Bootstrap').log(
